@@ -38,7 +38,7 @@ def test_all_members_when_no_members_in_project(api_client, project, member):
     non-members if project has no members"""
     project.members.clear()
     url = reverse('project-non-members', kwargs={'pk': project.pk})
-    response = api_client.get(url)
+    response = api_client.get(url, follow=True)
     data = response.data
 
     assert response.status_code == HTTP_200_OK
@@ -52,7 +52,7 @@ def test_remaining_members_when_some_members_in_project(api_client, project,
     """Test that remaining members are retried when calling service
     non-members if project has already some members"""
     url = reverse('project-non-members', kwargs={'pk': project.pk})
-    response = api_client.get(url)
+    response = api_client.get(url, follow=True)
     data = response.data
 
     assert response.status_code == HTTP_200_OK
@@ -65,7 +65,7 @@ def test_no_members_when_all_members_in_project(api_client, project):
     """Test that no members are retrieve when calling service
     non-members if all members are already in project"""
     url = reverse('project-non-members', kwargs={'pk': project.pk})
-    response = api_client.get(url)
+    response = api_client.get(url, follow=True)
     data = response.data
     assert response.status_code == HTTP_200_OK
     assert len(data) == 0
@@ -75,7 +75,7 @@ def test_no_members_when_all_members_in_project(api_client, project):
 def test_project_members_are_retrieved(api_client, project, member):
     """Test that members from project are retrieved"""
     url = reverse('project-members', kwargs={'pk': project.pk})
-    response = api_client.get(url)
+    response = api_client.get(url, follow=True)
     data = response.data
     assert response.status_code == HTTP_200_OK
     assert len(data) == 1
@@ -116,7 +116,7 @@ def test_400_response_when_member_already_in_project(api_client, project,
 def test_member_is_added_to_project(api_client, project, new_member):
     """Test that a member is successfully added to a project"""
     url = reverse('project-add-member', kwargs={'pk': project.pk})
-    response = api_client.post(url, {'key': new_member.pk}, format='json')
+    response = api_client.post(url, {'key': new_member.pk}, format='json', follow=True)
 
     assert response.status_code == HTTP_200_OK
     assert len(project.members.all()) == 2
@@ -157,7 +157,7 @@ def test_400_response_when_member_not_in_project(api_client, project,
 def test_member_is_removed_from_project(api_client, project, member):
     """Test that a member is successfully removed from a project"""
     url = reverse('project-remove-member', kwargs={'pk': project.pk})
-    response = api_client.post(url, {'key': member.pk}, format='json')
+    response = api_client.post(url, {'key': member.pk}, format='json', follow=True)
 
     assert response.status_code == HTTP_200_OK
     assert len(project.members.all()) == 0
@@ -176,7 +176,7 @@ def test_participation_view_no_participations_no_observations(
     meeting = Meeting.objects.create(project=project, date_time=date_time)
 
     url = reverse('meeting-participation', kwargs={'pk': meeting.pk})
-    response = api_client.get(url)
+    response = api_client.get(url, follow=True)
     data = response.data
 
     assert response.status_code == HTTP_200_OK
@@ -195,7 +195,7 @@ def test_participation_view_one_participation_and_observations(
     meeting.observations = 'This is for testing purposes.'
     meeting.save()
     url = reverse('meeting-participation', kwargs={'pk': meeting.pk})
-    response = api_client.get(url)
+    response = api_client.get(url, follow=True)
     data = response.data
 
     assert response.status_code == HTTP_200_OK
@@ -223,7 +223,7 @@ def test_participation_view_two_participation_and_observations(
     meeting = Meeting.objects.create(project=project, date_time=date_time)
 
     url = reverse('meeting-participation', kwargs={'pk': meeting.pk})
-    response = api_client.get(url)
+    response = api_client.get(url, follow=True)
     data = response.data
     participations = meeting.participations.all()
 
@@ -252,7 +252,7 @@ def test_track_participation_updates_attended_in_participation_and_observations_
         }],
         'observations': 'This is just a test.'
     }
-    response = api_client.post(url, data, format='json')
+    response = api_client.post(url, data, format='json', follow=True)
     participation.refresh_from_db()
     meeting.refresh_from_db()
 
